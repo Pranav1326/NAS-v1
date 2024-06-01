@@ -4,6 +4,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const fileInput = document.getElementById('fileInput');
   const folderInput = document.getElementById('folderInput');
   const fileList = document.getElementById('fileList');
+  const backButton = document.getElementById('backButton');
+
+  let currentPath = '';
 
   uploadForm.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -43,8 +46,15 @@ document.addEventListener('DOMContentLoaded', () => {
     .catch(error => console.error('Error:', error));
   });
 
+  backButton.addEventListener('click', () => {
+    const pathParts = currentPath.split('/').filter(Boolean);
+    pathParts.pop();
+    currentPath = pathParts.join('/');
+    loadFiles();
+  });
+
   function loadFiles() {
-    fetch('/files')
+    fetch(`/files?path=${encodeURIComponent(currentPath)}`)
       .then(response => response.json())
       .then(files => {
         fileList.innerHTML = '';
@@ -52,32 +62,55 @@ document.addEventListener('DOMContentLoaded', () => {
           const listItem = document.createElement('li');
 
           const fileNameSpan = document.createElement('span');
-          fileNameSpan.textContent = file;
+          fileNameSpan.textContent = file.name;
 
-          const previewImage = document.createElement('img');
-          previewImage.src = file.match(/\.(jpeg|jpg|gif|png)$/) ? `/files/${file}` : 'placeholder.png';
-          previewImage.classList.add('preview');
-          previewImage.alt = file;
+          if (file.type === 'directory') {
+            fileNameSpan.style.cursor = 'pointer';
+            fileNameSpan.onclick = () => {
+              currentPath = file.path;
+              loadFiles();
+            };
+
+            const folderIcon = document.createElement('img');
+            folderIcon.classList.add('folder');
+            folderIcon.src = 'folder-icon.png'; // Add a folder icon image in your public directory
+            // folderIcon.alt = 'Folder';
+            // folderIcon.style.width = '20px';
+            // folderIcon.style.height = '20px';
+
+            listItem.appendChild(folderIcon);
+          } else {
+            const fileIcon = document.createElement('img');
+            fileIcon.classList.add('file');
+            fileIcon.src = 'file-icon.png'; // Add a generic file icon image in your public directory
+            // fileIcon.alt = 'File';
+            // fileIcon.style.width = '20px';
+            // fileIcon.style.height = '20px';
+
+            listItem.appendChild(fileIcon);
+          }
 
           const deleteButton = document.createElement('button');
           deleteButton.textContent = 'Delete';
-          deleteButton.onclick = () => deleteFile(file);
+          deleteButton.onclick = () => deleteFile(file.path);
 
           const renameButton = document.createElement('button');
           renameButton.textContent = 'Rename';
-          renameButton.onclick = () => renameFile(file);
+          renameButton.onclick = () => renameFile(file.path);
 
-          listItem.appendChild(previewImage);
           listItem.appendChild(fileNameSpan);
           listItem.appendChild(deleteButton);
           listItem.appendChild(renameButton);
           fileList.appendChild(listItem);
         });
-      });
+
+        backButton.style.display = currentPath ? 'block' : 'none';
+      })
+      .catch(error => console.error('Error:', error));
   }
 
-  function deleteFile(filename) {
-    fetch(`/files/${filename}`, {
+  function deleteFile(filePath) {
+    fetch(`/files/${encodeURIComponent(filePath)}`, {
       method: 'DELETE'
     })
     .then(response => response.text())
@@ -88,10 +121,10 @@ document.addEventListener('DOMContentLoaded', () => {
     .catch(error => console.error('Error:', error));
   }
 
-  function renameFile(filename) {
-    const newFilename = prompt('Enter new filename:', filename);
+  function renameFile(filePath) {
+    const newFilename = prompt('Enter new filename:', filePath);
     if (newFilename) {
-      fetch(`/files/${filename}`, {
+      fetch(`/files/${encodeURIComponent(filePath)}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'

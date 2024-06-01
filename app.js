@@ -42,21 +42,29 @@ app.get('/files/:filename', (req, res) => {
 
 // List Files
 app.get('/files', (req, res) => {
+  const currentPath = req.query.path || '';
+
   const listFiles = (dir) => {
     let results = [];
     const list = fs.readdirSync(dir);
     list.forEach((file) => {
-      file = path.resolve(dir, file);
-      const stat = fs.statSync(file);
+      const filePath = path.resolve(dir, file);
+      const stat = fs.statSync(filePath);
       if (stat && stat.isDirectory()) {
-        results = results.concat(listFiles(file));
+        results.push({ name: file, type: 'directory', path: path.join(currentPath, file) });
       } else {
-        results.push(file.replace(storageDir + path.sep, ''));
+        results.push({ name: file, type: 'file', path: path.join(currentPath, file) });
       }
     });
     return results;
   };
-  res.json(listFiles(storageDir));
+
+  const fullPath = path.join(storageDir, currentPath);
+  if (fs.existsSync(fullPath)) {
+    res.json(listFiles(fullPath));
+  } else {
+    res.status(404).send('Path not found');
+  }
 });
 
 // Update/Rename File

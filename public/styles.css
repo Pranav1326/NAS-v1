@@ -11,13 +11,27 @@ form {
 ul {
   list-style-type: none;
   padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
 }
 li {
   margin: 5px 0;
   display: flex;
   justify-content: space-between;
+  height: 8rem;
+  width: 8rem;
+  display: flex;
+  flex-direction: column;
+}
+li>span{
+  overflow: scroll;
 }
 .preview{
   width: 10rem;
+  height: auto;
+}
+.folder, .file{
+  width: 2rem;
   height: auto;
 }
