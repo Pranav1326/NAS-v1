@@ -3,21 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cloud Storage</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>File Manager</title>
+  <style>
+    /* Add your CSS styles here */
+  </style>
 </head>
 <body>
-  <h1>Cloud Storage</h1>
-  <form id="uploadForm" enctype="multipart/form-data">
-    <input type="file" id="fileInput" name="files" multiple required>
+  <h1>File Manager</h1>
+  <div id="breadcrumb"></div>
+  <button id="backButton" style="display:none;">Back</button>
+  <form id="uploadForm">
+    <input type="file" id="fileInput" multiple>
     <button type="submit">Upload Files</button>
   </form>
-  <form id="folderUploadForm" enctype="multipart/form-data">
-    <input type="file" id="folderInput" name="files" webkitdirectory directory multiple>
+  <form id="folderUploadForm">
+    <input type="file" id="folderInput" webkitdirectory multiple>
     <button type="submit">Upload Folder</button>
   </form>
-  <h2>Files</h2>
-  <button id="backButton" style="display: none;">Back</button>
+  <form id="createFolderForm">
+    <input type="text" id="folderNameInput" placeholder="Folder Name">
+    <button type="submit">Create Folder</button>
+  </form>
   <ul id="fileList"></ul>
   <script src="script.js"></script>
 </body>

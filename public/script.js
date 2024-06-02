@@ -1,16 +1,20 @@
 document.addEventListener('DOMContentLoaded', () => {
   const uploadForm = document.getElementById('uploadForm');
   const folderUploadForm = document.getElementById('folderUploadForm');
+  const createFolderForm = document.getElementById('createFolderForm');
   const fileInput = document.getElementById('fileInput');
   const folderInput = document.getElementById('folderInput');
+  const folderNameInput = document.getElementById('folderNameInput');
   const fileList = document.getElementById('fileList');
   const backButton = document.getElementById('backButton');
+  const breadcrumb = document.getElementById('breadcrumb');
 
   let currentPath = '';
 
   uploadForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const formData = new FormData();
+    formData.append('path', currentPath);
     for (const file of fileInput.files) {
       formData.append('files', file, file.name);
     }
@@ -30,6 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
   folderUploadForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const formData = new FormData();
+    formData.append('path', currentPath);
     for (const file of folderInput.files) {
       formData.append('files', file, file.webkitRelativePath);
     }
@@ -44,6 +49,26 @@ document.addEventListener('DOMContentLoaded', () => {
       loadFiles();
     })
     .catch(error => console.error('Error:', error));
+  });
+
+  createFolderForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const folderName = folderNameInput.value.trim();
+    if (folderName) {
+      fetch('/create-folder', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ path: currentPath, folderName: folderName })
+      })
+      .then(response => response.text())
+      .then(data => {
+        alert(data);
+        loadFiles();
+      })
+      .catch(error => console.error('Error:', error));
+    }
   });
 
   backButton.addEventListener('click', () => {
@@ -72,20 +97,18 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             const folderIcon = document.createElement('img');
-            folderIcon.classList.add('folder');
             folderIcon.src = 'folder-icon.png'; // Add a folder icon image in your public directory
-            // folderIcon.alt = 'Folder';
-            // folderIcon.style.width = '20px';
-            // folderIcon.style.height = '20px';
+            folderIcon.alt = 'Folder';
+            folderIcon.style.width = '20px';
+            folderIcon.style.height = '20px';
 
             listItem.appendChild(folderIcon);
           } else {
             const fileIcon = document.createElement('img');
-            fileIcon.classList.add('file');
             fileIcon.src = 'file-icon.png'; // Add a generic file icon image in your public directory
-            // fileIcon.alt = 'File';
-            // fileIcon.style.width = '20px';
-            // fileIcon.style.height = '20px';
+            fileIcon.alt = 'File';
+            fileIcon.style.width = '20px';
+            fileIcon.style.height = '20px';
 
             listItem.appendChild(fileIcon);
           }
@@ -105,8 +128,46 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         backButton.style.display = currentPath ? 'block' : 'none';
+        updateBreadcrumb();
       })
       .catch(error => console.error('Error:', error));
+  }
+
+  function updateBreadcrumb() {
+    breadcrumb.innerHTML = '';
+
+    const pathParts = currentPath.split('/').filter(Boolean);
+    let fullPath = '';
+
+    pathParts.forEach((part, index) => {
+      fullPath += part + '/';
+
+      const span = document.createElement('span');
+      span.textContent = part;
+      span.style.cursor = 'pointer';
+      span.onclick = () => {
+        currentPath = pathParts.slice(0, index + 1).join('/');
+        loadFiles();
+      };
+
+      breadcrumb.appendChild(span);
+      if (index < pathParts.length - 1) {
+        breadcrumb.appendChild(document.createTextNode(' / '));
+      }
+    });
+
+    if (currentPath) {
+      const rootSpan = document.createElement('span');
+      rootSpan.textContent = 'Root';
+      rootSpan.style.cursor = 'pointer';
+      rootSpan.onclick = () => {
+        currentPath = '';
+        loadFiles();
+      };
+
+      breadcrumb.insertBefore(document.createTextNode(' / '), breadcrumb.firstChild);
+      breadcrumb.insertBefore(rootSpan, breadcrumb.firstChild);
+    }
   }
 
   function deleteFile(filePath) {
@@ -122,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renameFile(filePath) {
-    const newFilename = prompt('Enter new filename:', filePath);
+    const newFilename = prompt('Enter new name:');
     if (newFilename) {
       fetch(`/files/${encodeURIComponent(filePath)}`, {
         method: 'PUT',
