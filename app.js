@@ -41,7 +41,7 @@ app.post('/upload', (req, res) => {
       return res.status(400).send('Error parsing form data');
     }
 
-    const currentPath = fields.path || '';
+    const currentPath = fields.path.join() || '/';
     if (typeof currentPath !== 'string') {
       return res.status(400).send('Invalid path');
     }
@@ -51,13 +51,14 @@ app.post('/upload', (req, res) => {
     const fileArray = Array.isArray(files.files) ? files.files : [files.files];
 
     fileArray.forEach(file => {
-      const uploadPath = path.join(uploadDir, file.name);
+      const uploadPath = path.join(uploadDir, file.originalFilename);
       const dir = path.dirname(uploadPath);
 
       fs.mkdirSync(dir, { recursive: true });
 
-      fs.rename(file.path, uploadPath, (err) => {
+      fs.rename(file.filepath, uploadPath, (err) => {
         if (err) {
+          console.log(err)
           return res.status(500).send('Error uploading file');
         }
       });

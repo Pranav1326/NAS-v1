@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const backButton = document.getElementById('backButton');
   const breadcrumb = document.getElementById('breadcrumb');
 
-  let currentPath = '';
+  let currentPath = '/';
 
   uploadForm.addEventListener('submit', (e) => {
     e.preventDefault();
