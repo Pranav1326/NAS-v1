@@ -104,6 +104,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             listItem.appendChild(folderIcon);
           } else {
+            fileNameSpan.style.cursor = 'pointer';
+            fileNameSpan.onclick = () => viewFile(file.path);
+
             const fileIcon = document.createElement('img');
             fileIcon.src = 'file-icon.png'; // Add a generic file icon image in your public directory
             fileIcon.alt = 'File';
@@ -198,6 +201,56 @@ document.addEventListener('DOMContentLoaded', () => {
         loadFiles();
       })
       .catch(error => console.error('Error:', error));
+    }
+  }
+
+  function viewFile(filePath) {
+    const fileExt = filePath.split('.').pop().toLowerCase();
+    if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(fileExt)) {
+      const img = document.createElement('img');
+      img.src = `/files/${encodeURIComponent(filePath)}`;
+      img.style.maxWidth = '500px';
+      img.style.maxHeight = '500px';
+
+      const viewer = document.createElement('div');
+      viewer.style.position = 'fixed';
+      viewer.style.top = '50%';
+      viewer.style.left = '50%';
+      viewer.style.transform = 'translate(-50%, -50%)';
+      viewer.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+      viewer.style.padding = '10px';
+      viewer.style.borderRadius = '5px';
+      viewer.style.zIndex = '1000';
+      viewer.style.textAlign = 'center';
+
+      viewer.appendChild(img);
+
+      const closeButton = document.createElement('button');
+      closeButton.style.position = 'absolute';
+      closeButton.style.top = '1rem';
+      closeButton.style.right = '1rem';
+      closeButton.textContent = 'X';
+      closeButton.onclick = () => {
+        document.body.removeChild(viewer);
+      };
+
+      const downloadButton = document.createElement('button');
+      downloadButton.style.position = 'absolute';
+      downloadButton.style.top = '3rem';
+      downloadButton.style.right = '1rem';
+      downloadButton.textContent = 'Download';
+      downloadButton.onclick = () => {
+        const link = document.createElement('a');
+        link.href = `/files/download/${encodeURIComponent(filePath)}`;
+        link.download = filePath.split('/').pop();
+        link.click();
+      };
+
+      viewer.appendChild(downloadButton);
+      viewer.appendChild(closeButton);
+      document.body.appendChild(viewer);
+    } else {
+      alert('This file is not viewable.');
     }
   }
 

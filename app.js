@@ -27,12 +27,11 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// CRUD Routes
-
+// Ensure storage directory exists
 if (!fs.existsSync(storageDir)) {
   fs.mkdirSync(storageDir);
 }
-// Create/Upload Files
+
 // File Upload
 app.post('/upload', (req, res) => {
   const form = new formidable.IncomingForm({ multiples: true });
@@ -58,7 +57,7 @@ app.post('/upload', (req, res) => {
 
       fs.rename(file.filepath, uploadPath, (err) => {
         if (err) {
-          console.log(err)
+          console.log(err);
           return res.status(500).send('Error uploading file');
         }
       });
@@ -82,8 +81,20 @@ app.post('/create-folder', (req, res) => {
 // Read/Get File
 app.get('/files/:filename', (req, res) => {
   const filePath = path.join(storageDir, req.params.filename);
-  res.download(filePath);
+  res.sendFile(filePath);
 });
+
+// Download File
+app.get('/files/download/:filename', (req, res) => {
+  const filePath = path.join(storageDir, req.params.filename);
+  res.download(filePath, err => {
+    if (err) {
+      console.error('Error during file download:', err);
+      res.status(500).send('Error during file download');
+    }
+  });
+});
+
 
 // List Files
 app.get('/files', (req, res) => {
