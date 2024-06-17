@@ -84,17 +84,43 @@ app.get('/files/:filename', (req, res) => {
   res.sendFile(filePath);
 });
 
-// Download File
+// Download File or Folder
 app.get('/files/download/:filename', (req, res) => {
   const filePath = path.join(storageDir, req.params.filename);
-  res.download(filePath, err => {
-    if (err) {
-      console.error('Error during file download:', err);
-      res.status(500).send('Error during file download');
-    }
-  });
-});
+  
+  if (fs.lstatSync(filePath).isDirectory()) {
+    const archiveName = `${req.params.filename}.zip`;
+    const archivePath = path.join(storageDir, archiveName);
+    
+    const output = fs.createWriteStream(archivePath);
+    const archive = require('archiver')('zip');
 
+    output.on('close', () => {
+      res.download(archivePath, archiveName, (err) => {
+        if (err) {
+          console.error('Error during file download:', err);
+          res.status(500).send('Error during file download');
+        }
+        fs.unlinkSync(archivePath); // Delete the zip after download
+      });
+    });
+
+    archive.on('error', (err) => {
+      throw err;
+    });
+
+    archive.pipe(output);
+    archive.directory(filePath, false);
+    archive.finalize();
+  } else {
+    res.download(filePath, err => {
+      if (err) {
+        console.error('Error during file download:', err);
+        res.status(500).send('Error during file download');
+      }
+    });
+  }
+});
 
 // List Files
 app.get('/files', (req, res) => {
