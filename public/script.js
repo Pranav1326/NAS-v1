@@ -65,6 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
       .then(response => response.text())
       .then(data => {
         alert(data);
+        folderNameInput.value = "";
         loadFiles();
       })
       .catch(error => console.error('Error:', error));
@@ -99,8 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const folderIcon = document.createElement('img');
             folderIcon.src = 'folder-icon.png'; // Add a folder icon image in your public directory
             folderIcon.alt = 'Folder';
-            folderIcon.style.width = '20px';
-            folderIcon.style.height = '20px';
+            folderIcon.classList.add('folder');
   
             listItem.appendChild(folderIcon);
           } else {
@@ -110,15 +110,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const fileIcon = document.createElement('img');
             fileIcon.src = 'file-icon.png'; // Add a generic file icon image in your public directory
             fileIcon.alt = 'File';
-            fileIcon.style.width = '20px';
-            fileIcon.style.height = '20px';
+            fileIcon.classList.add('file');
   
             listItem.appendChild(fileIcon);
           }
   
           const deleteButton = document.createElement('button');
           deleteButton.textContent = 'Delete';
-          deleteButton.onclick = () => deleteFile(file.path);
+          deleteButton.onclick = () => {
+            const confirm = window.confirm("Are you sure to delete?");
+            confirm && deleteFile(file.path);
+          };
   
           const renameButton = document.createElement('button');
           renameButton.textContent = 'Rename';

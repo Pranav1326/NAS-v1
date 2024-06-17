@@ -5,6 +5,9 @@ body {
 h1 {
   color: #333;
 }
+#main{
+  display: flex;
+}
 form {
   margin-bottom: 20px;
 }
@@ -19,9 +22,8 @@ li {
   margin: 5px 0;
   display: flex;
   justify-content: space-between;
-  height: 8rem;
+  height: auto;
   width: 8rem;
-  display: flex;
   flex-direction: column;
 }
 li>span{
@@ -32,6 +34,33 @@ li>span{
   height: auto;
 }
 .folder, .file{
-  width: 2rem;
+  width: 4rem;
   height: auto;
+}
+.path{
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background-color: rgb(140, 209, 219);
+  padding: 1rem 0.5rem;
+  border-radius: 4px;
+  z-index: 10;
+}
+.new-items-create{
+  margin: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  position: sticky;
+  top: 2rem;
+  max-width: 16rem;
+}
+#uploadForm,
+#folderUploadForm,
+#createFolderForm{
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
 }

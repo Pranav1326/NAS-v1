@@ -3,28 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>File Manager</title>
-  <style>
-    /* Add your CSS styles here */
-  </style>
+  <title>Network Access Storage</title>
+  <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-  <h1>File Manager</h1>
-  <div id="breadcrumb"></div>
-  <button id="backButton" style="display:none;">Back</button>
-  <form id="uploadForm">
-    <input type="file" id="fileInput" multiple>
-    <button type="submit">Upload Files</button>
-  </form>
-  <form id="folderUploadForm">
-    <input type="file" id="folderInput" webkitdirectory multiple>
-    <button type="submit">Upload Folder</button>
-  </form>
-  <form id="createFolderForm">
-    <input type="text" id="folderNameInput" placeholder="Folder Name">
-    <button type="submit">Create Folder</button>
-  </form>
-  <ul id="fileList"></ul>
+  <h1>Network Access Storage</h1>
+  <div class="path">
+    <button id="backButton" style="display:none;">Back</button>
+    <div id="breadcrumb"></div>
+  </div>
+  <div id="main" role="main">
+    <div class="new-items-create">
+      <form id="uploadForm">
+        <span>Upload Files</span>
+        <div>
+          <input type="file" id="fileInput" multiple>
+          <button type="submit">Upload Files</button>
+        </div>
+      </form>
+      <form id="folderUploadForm">
+        <span>Upload Folder</span>
+        <div>
+          <input type="file" id="folderInput" webkitdirectory multiple>
+          <button type="submit">Upload Folder</button>
+        </div>
+      </form>
+      <form id="createFolderForm">
+        <span>Create New Folder</span>
+        <div>
+          <input type="text" id="folderNameInput" placeholder="Folder Name">
+          <button type="submit">Create</button>
+        </div>
+      </form>
+    </div>
+    <ul id="fileList"></ul>
+  </div>
   <script src="script.js"></script>
 </body>
 </html>
