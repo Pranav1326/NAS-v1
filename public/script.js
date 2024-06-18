@@ -283,11 +283,24 @@ document.addEventListener('DOMContentLoaded', () => {
           <p><strong>Name:</strong> ${details.name}</p>
           <p><strong>Path:</strong> ${details.path}</p>
           <p><strong>Type:</strong> ${details.type}</p>
-          ${details.size ? `<p><strong>Size:</strong> ${details.size} bytes</p>` : ''}
+          ${details.size ? `<p><strong>Size:</strong> ${formatFileSize(details.size)}</p>` : ''}
           ${details.lastModified ? `<p><strong>Last Modified:</strong> ${details.lastModified}</p>` : ''}
         `;
       })
       .catch(error => console.error('Error:', error));
+  }
+
+  function formatFileSize(bytes) {
+    const units = ['bytes', 'KB', 'MB', 'GB', 'TB'];
+    let size = bytes;
+    let unitIndex = 0;
+
+    while (size >= 1024 && unitIndex < units.length - 1) {
+      size /= 1024;
+      unitIndex++;
+    }
+
+    return `${size.toFixed(2)} ${units[unitIndex]}`;
   }
 
   loadFiles();
