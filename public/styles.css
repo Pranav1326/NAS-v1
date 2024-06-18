@@ -24,8 +24,8 @@ li {
   margin: 5px 0;
   display: flex;
   justify-content: space-between;
-  height: auto;
-  width: 8rem;
+  height: fit-content;
+  min-width: 8rem;
   flex-direction: column;
 }
 li>span{

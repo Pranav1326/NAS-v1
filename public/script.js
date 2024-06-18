@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
           fileNameSpan.textContent = file.name;
           fileNameSpan.style.cursor = 'pointer';
 
-          fileNameSpan.onclick = () => {
+          listItem.onclick = () => {
             if (selectedElement) {
               selectedElement.classList.remove('selected');
             }
@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showDetails(file.path);
           };
 
-          fileNameSpan.ondblclick = () => {
+          listItem.ondblclick = () => {
             if (file.type === 'directory') {
               currentPath = file.path;
               loadFiles();
