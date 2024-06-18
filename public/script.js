@@ -8,8 +8,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const fileList = document.getElementById('fileList');
   const backButton = document.getElementById('backButton');
   const breadcrumb = document.getElementById('breadcrumb');
+  const detailsPanel = document.getElementById('detailsPanel');
 
   let currentPath = '/';
+  let selectedElement = null;
 
   uploadForm.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -65,7 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
       .then(response => response.text())
       .then(data => {
         alert(data);
-        folderNameInput.value = "";
         loadFiles();
       })
       .catch(error => console.error('Error:', error));
@@ -86,69 +87,71 @@ document.addEventListener('DOMContentLoaded', () => {
         fileList.innerHTML = '';
         files.forEach(file => {
           const listItem = document.createElement('li');
-  
+          listItem.className = 'file-item';
+
           const fileNameSpan = document.createElement('span');
           fileNameSpan.textContent = file.name;
-  
-          if (file.type === 'directory') {
-            fileNameSpan.style.cursor = 'pointer';
-            fileNameSpan.onclick = () => {
+          fileNameSpan.style.cursor = 'pointer';
+
+          fileNameSpan.onclick = () => {
+            if (selectedElement) {
+              selectedElement.classList.remove('selected');
+            }
+            listItem.classList.add('selected');
+            selectedElement = listItem;
+            showDetails(file.path);
+          };
+
+          fileNameSpan.ondblclick = () => {
+            if (file.type === 'directory') {
               currentPath = file.path;
               loadFiles();
-            };
-  
-            const folderIcon = document.createElement('img');
-            folderIcon.src = 'folder-icon.png'; // Add a folder icon image in your public directory
-            folderIcon.alt = 'Folder';
-            folderIcon.classList.add('folder');
-  
-            listItem.appendChild(folderIcon);
-          } else {
-            fileNameSpan.style.cursor = 'pointer';
-            fileNameSpan.onclick = () => viewFile(file.path);
-  
-            const fileIcon = document.createElement('img');
-            fileIcon.src = 'file-icon.png'; // Add a generic file icon image in your public directory
-            fileIcon.alt = 'File';
-            fileIcon.classList.add('file');
-  
-            listItem.appendChild(fileIcon);
-          }
-  
+            } else {
+              viewFile(file.path);
+            }
+          };
+
+          const fileIcon = document.createElement('img');
+          fileIcon.src = file.type === 'directory' ? 'folder-icon.png' : 'file-icon.png';
+          fileIcon.alt = file.type;
+          fileIcon.className = file.type === 'directory' ? 'folder' : 'file';
+
+          listItem.appendChild(fileIcon);
+          listItem.appendChild(fileNameSpan);
+
           const deleteButton = document.createElement('button');
           deleteButton.textContent = 'Delete';
-          deleteButton.onclick = () => {
-            const confirm = window.confirm("Are you sure to delete?");
-            confirm && deleteFile(file.path);
+          deleteButton.onclick = (e) => {
+            e.stopPropagation();
+            deleteFile(file.path);
           };
-  
+
           const renameButton = document.createElement('button');
           renameButton.textContent = 'Rename';
-          renameButton.onclick = () => renameFile(file.path);
-  
+          renameButton.onclick = (e) => {
+            e.stopPropagation();
+            renameFile(file.path);
+          };
+
           const downloadButton = document.createElement('button');
           downloadButton.textContent = 'Download';
-          downloadButton.onclick = () => downloadFile(file.path);
-  
-          listItem.appendChild(fileNameSpan);
+          downloadButton.onclick = (e) => {
+            e.stopPropagation();
+            downloadFile(file.path);
+          };
+
           listItem.appendChild(deleteButton);
           listItem.appendChild(renameButton);
           listItem.appendChild(downloadButton);
+
           fileList.appendChild(listItem);
         });
-  
+
         backButton.style.display = currentPath ? 'block' : 'none';
         updateBreadcrumb();
       })
       .catch(error => console.error('Error:', error));
   }
-  
-  function downloadFile(filePath) {
-    const link = document.createElement('a');
-    link.href = `/files/download/${encodeURIComponent(filePath)}`;
-    link.download = filePath.split('/').pop();
-    link.click();
-  }  
 
   function updateBreadcrumb() {
     breadcrumb.innerHTML = '';
@@ -225,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
       img.src = `/files/${encodeURIComponent(filePath)}`;
       img.style.maxWidth = '500px';
       img.style.maxHeight = '500px';
-  
+
       const viewer = document.createElement('div');
       viewer.style.position = 'fixed';
       viewer.style.top = '50%';
@@ -235,10 +238,9 @@ document.addEventListener('DOMContentLoaded', () => {
       viewer.style.padding = '10px';
       viewer.style.borderRadius = '5px';
       viewer.style.zIndex = '1000';
-      viewer.style.textAlign = 'center';
-  
+
       viewer.appendChild(img);
-  
+
       const closeButton = document.createElement('button');
       closeButton.style.position = 'absolute';
       closeButton.style.top = '1rem';
@@ -247,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
       closeButton.onclick = () => {
         document.body.removeChild(viewer);
       };
-  
+
       const downloadButton = document.createElement('button');
       downloadButton.style.position = 'absolute';
       downloadButton.style.top = '3rem';
@@ -256,14 +258,37 @@ document.addEventListener('DOMContentLoaded', () => {
       downloadButton.onclick = () => {
         downloadFile(filePath);
       };
-  
+
       viewer.appendChild(downloadButton);
       viewer.appendChild(closeButton);
       document.body.appendChild(viewer);
     } else {
-      alert('This file is not viewable.');
+      alert("File can not be visible!");
     }
-  }  
+  }
+
+  function downloadFile(filePath) {
+    const link = document.createElement('a');
+    link.href = `/files/download/${encodeURIComponent(filePath)}`;
+    link.download = filePath.split('/').pop();
+    link.click();
+  }
+
+  function showDetails(filePath) {
+    fetch(`/files/details/${encodeURIComponent(filePath)}`)
+      .then(response => response.json())
+      .then(details => {
+        detailsPanel.innerHTML = `
+          <h3>Details</h3>
+          <p><strong>Name:</strong> ${details.name}</p>
+          <p><strong>Path:</strong> ${details.path}</p>
+          <p><strong>Type:</strong> ${details.type}</p>
+          ${details.size ? `<p><strong>Size:</strong> ${details.size} bytes</p>` : ''}
+          ${details.lastModified ? `<p><strong>Last Modified:</strong> ${details.lastModified}</p>` : ''}
+        `;
+      })
+      .catch(error => console.error('Error:', error));
+  }
 
   loadFiles();
 });

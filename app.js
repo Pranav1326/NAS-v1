@@ -115,11 +115,31 @@ app.get('/files/download/:filename', (req, res) => {
   } else {
     res.download(filePath, err => {
       if (err) {
-        console.error('Error during file download:', err);
+        console.error('Error during file download: ', err);
         res.status(500).send('Error during file download');
       }
     });
   }
+});
+
+// Get Details of File or Folder
+app.get('/files/details/:path', (req, res) => {
+  const itemPath = path.join(storageDir, req.params.path);
+
+  fs.stat(itemPath, (err, stats) => {
+    if (err) {
+      return res.status(500).send('Error fetching details');
+    }
+    const details = {
+      name: path.basename(itemPath),
+      path: req.params.path,
+      size: stats.size,
+      type: stats.isDirectory() ? 'directory' : 'file',
+      createdAt: stats.birthtime,
+      modifiedAt: stats.mtime
+    };
+    res.json(details);
+  });
 });
 
 // List Files
