@@ -113,3 +113,20 @@ button {
 #breadcrumb span:hover {
   text-decoration: underline;
 }
+
+.storage-capacity{
+  height: 6px;
+  border-radius: 5px;
+  width: 100%;
+  display: flex;
+}
+
+.ocupancy{
+  background-color: steelblue;
+  height: 6px;
+}
+
+.full{
+  background-color: #000;
+  height: 6px;
+}

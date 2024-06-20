@@ -9,10 +9,33 @@ document.addEventListener('DOMContentLoaded', () => {
   const backButton = document.getElementById('backButton');
   const breadcrumb = document.getElementById('breadcrumb');
   const detailsPanel = document.getElementById('detailsPanel');
+  const storagePanel = document.createElement('div');
 
   let currentPath = '/';
   let selectedElement = null;
 
+  // Fetch and display storage details
+  function loadStorageDetails() {
+    fetch('/storage-details')
+      .then(response => response.json())
+      .then(data => {
+        const totalSpace = formatFileSize(data.totalSpace);
+        const usedSpace = formatFileSize(data.usedSpace);
+        console.log(data);
+        const usedPr = ((usedSpace.split(" ")[0])/(totalSpace.split(" ")[0]))*100;
+        detailsPanel.innerHTML = `
+          <h3>Storage Details</h3>
+          <p><strong>Total Space:</strong> ${totalSpace}</p>
+          <p><strong>Used Space:</strong> ${usedSpace}</p>
+          <div class="storage-capacity">
+            <div class="ocupancy" style="width: ${usedPr}%"></div>
+            <div class="full" style="width: ${100-usedPr}%"></div>
+          </div>
+        `;
+      })
+      .catch(error => console.error('Error:', error));
+  }
+  
   uploadForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const formData = new FormData();
@@ -99,7 +122,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             listItem.classList.add('selected');
             selectedElement = listItem;
-            showDetails(file.path);
+            if(currentPath === '/'){
+              loadStorageDetails();
+            }
+            else{
+              showDetails(file.path);
+            }
           };
 
           listItem.ondblclick = () => {
@@ -149,6 +177,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         backButton.style.display = currentPath ? 'block' : 'none';
         updateBreadcrumb();
+        if (currentPath === '/') {
+          loadStorageDetails();
+        } else {
+          storagePanel.innerHTML = '';
+        }
       })
       .catch(error => console.error('Error:', error));
   }
@@ -276,18 +309,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function showDetails(filePath) {
     fetch(`/files/details/${encodeURIComponent(filePath)}`)
-      .then(response => response.json())
-      .then(details => {
-        detailsPanel.innerHTML = `
-          <h3>Details</h3>
-          <p><strong>Name:</strong> ${details.name}</p>
-          <p><strong>Path:</strong> ${details.path}</p>
-          <p><strong>Type:</strong> ${details.type}</p>
-          ${details.size ? `<p><strong>Size:</strong> ${formatFileSize(details.size)}</p>` : ''}
-          ${details.lastModified ? `<p><strong>Last Modified:</strong> ${details.lastModified}</p>` : ''}
-        `;
-      })
-      .catch(error => console.error('Error:', error));
+    .then(response => response.json())
+    .then(details => {
+      detailsPanel.innerHTML = `
+      <h3>Details</h3>
+      <p><strong>Name:</strong> ${details.name}</p>
+      <p><strong>Path:</strong> ${details.path}</p>
+      <p><strong>Type:</strong> ${details.type}</p>
+      ${details.size ? `<p><strong>Size:</strong> ${formatFileSize(details.size)}</p>` : ''}
+      ${details.lastModified ? `<p><strong>Last Modified:</strong> ${details.lastModified}</p>` : ''}
+      `;
+    })
+    .catch(error => console.error('Error:', error));
   }
 
   function formatFileSize(bytes) {

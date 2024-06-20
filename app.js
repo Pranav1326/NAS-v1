@@ -1,17 +1,28 @@
 const express = require('express');
 const multer = require('multer');
+const os = require('os');
 const fs = require('fs');
 const path = require('path');
+const { readdir, stat } = require('fs/promises');
+const { join } = require('path');
 const formidable = require('formidable');
 const app = express();
 const PORT = 3000;
-const storageDir = '/Users/pranav/storage';
+// const storageDir = '/Users/pranav/storage';
+const storageDir = '/Volumes';
 
 // Serve static files from the public directory
 app.use(express.static('public'));
 
 // Middleware to parse JSON bodies
 app.use(express.json());
+
+// Function to get the storage details
+function getStorageDetails() {
+  const totalSpace = storageDir.size(); // Example, this should be your total storage capacity
+  const usedSpace = totalSpace - os.freemem(); // Example, this should be the used storage space
+  return { totalSpace, usedSpace, details };
+}
 
 // Configure Multer for file uploads
 const storage = multer.diskStorage({
@@ -31,6 +42,13 @@ const upload = multer({ storage: storage });
 if (!fs.existsSync(storageDir)) {
   fs.mkdirSync(storageDir);
 }
+
+// Storage Capacity and Usage Endpoint
+app.get('/storage-details', async (req, res) => {
+  const drivelist = require('drivelist');
+  const drives = await drivelist.list();
+  res.json(drives);
+});
 
 // File Upload
 app.post('/upload', (req, res) => {
@@ -122,18 +140,33 @@ app.get('/files/download/:filename', (req, res) => {
   }
 });
 
+// Get size of the directory recursively
+const dirSize = async dir => {
+  const files = await readdir(dir, { withFileTypes: true });
+  const paths = files.map( async file => {
+    const path = join(dir, file.name);
+    if (file.isDirectory()) return await dirSize(path);
+    if (file.isFile()) {
+      const { size } = await stat(path); 
+      return size;
+    }
+    return 0;
+  });
+  return(await Promise.all(paths)).flat(Infinity).reduce((i, size) => i + size, 0);
+}
+
 // Get Details of File or Folder
 app.get('/files/details/:path', (req, res) => {
   const itemPath = path.join(storageDir, req.params.path);
 
-  fs.stat(itemPath, (err, stats) => {
+  fs.stat(itemPath, async (err, stats) => {
     if (err) {
       return res.status(500).send('Error fetching details');
     }
     const details = {
       name: path.basename(itemPath),
       path: req.params.path,
-      size: stats.size,
+      size: stats.isDirectory() ? await dirSize(itemPath) : stats.size,
       type: stats.isDirectory() ? 'directory' : 'file',
       createdAt: stats.birthtime,
       modifiedAt: stats.mtime
