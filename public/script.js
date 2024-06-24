@@ -19,17 +19,21 @@ document.addEventListener('DOMContentLoaded', () => {
     fetch('/storage-details')
       .then(response => response.json())
       .then(data => {
-        const totalSpace = formatFileSize(data.totalSpace);
-        const usedSpace = formatFileSize(data.usedSpace);
-        console.log(data);
-        const usedPr = ((usedSpace.split(" ")[0])/(totalSpace.split(" ")[0]))*100;
+        const path = data.diskPath.split("/");
+        const newData = {
+          module: path[path.length-1],
+          size: formatFileSize(data.size),
+          free: formatFileSize(data.free),
+        }
+        const usedPr = (parseFloat(newData.free)/parseFloat(newData.size))*100;
         detailsPanel.innerHTML = `
           <h3>Storage Details</h3>
-          <p><strong>Total Space:</strong> ${totalSpace}</p>
-          <p><strong>Used Space:</strong> ${usedSpace}</p>
+          <h4>Drive: ${newData.module}</h4>
+          <p><strong>Total Space:</strong> ${newData.size}</p>
+          <p><strong>Used Space:</strong> ${newData.free}</p>
           <div class="storage-capacity">
-            <div class="ocupancy" style="width: ${usedPr}%"></div>
-            <div class="full" style="width: ${100-usedPr}%"></div>
+            <div class="ocupancy" style="width: ${100-usedPr}%"></div>
+            <div class="full" style="width: ${usedPr}%"></div>
           </div>
         `;
       })
@@ -313,8 +317,8 @@ document.addEventListener('DOMContentLoaded', () => {
     .then(details => {
       detailsPanel.innerHTML = `
       <h3>Details</h3>
-      <p><strong>Name:</strong> ${details.name}</p>
-      <p><strong>Path:</strong> ${details.path}</p>
+      <p class="details-name"><strong>Name:</strong> ${details.name}</p>
+      <p class="details-path"><strong>Path:</strong> ${details.path}</p>
       <p><strong>Type:</strong> ${details.type}</p>
       ${details.size ? `<p><strong>Size:</strong> ${formatFileSize(details.size)}</p>` : ''}
       ${details.lastModified ? `<p><strong>Last Modified:</strong> ${details.lastModified}</p>` : ''}

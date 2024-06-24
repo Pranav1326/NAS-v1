@@ -1,5 +1,6 @@
 const express = require('express');
 const multer = require('multer');
+const checkDiskSpace = require('check-disk-space').default;
 const os = require('os');
 const fs = require('fs');
 const path = require('path');
@@ -8,8 +9,8 @@ const { join } = require('path');
 const formidable = require('formidable');
 const app = express();
 const PORT = 3000;
-// const storageDir = '/Users/pranav/storage';
-const storageDir = '/Volumes';
+const storageDir = '/Users/pranav/storage';
+// const storageDir = '/Volumes';
 
 // Serve static files from the public directory
 app.use(express.static('public'));
@@ -45,9 +46,9 @@ if (!fs.existsSync(storageDir)) {
 
 // Storage Capacity and Usage Endpoint
 app.get('/storage-details', async (req, res) => {
-  const drivelist = require('drivelist');
-  const drives = await drivelist.list();
-  res.json(drives);
+  checkDiskSpace('/Volumes').then((diskSpace) => {
+    res.json(diskSpace);
+  });
 });
 
 // File Upload

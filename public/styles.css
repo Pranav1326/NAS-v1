@@ -114,6 +114,11 @@ button {
   text-decoration: underline;
 }
 
+.details-name,
+.details-path{
+  overflow-x: scroll;
+}
+
 .storage-capacity{
   height: 6px;
   border-radius: 5px;
